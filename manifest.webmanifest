@@ -1,0 +1,19 @@
+{
+  "name": "Noesis Paper Companion",
+  "short_name": "Noesis Paper",
+  "description": "Noesis 文献陪读台：目标导师论文阅读、五行输出和申请素材沉淀。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f5ef",
+  "theme_color": "#126b61",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
