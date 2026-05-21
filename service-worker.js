@@ -1,5 +1,5 @@
 // agent: codex (2026-05-21)
-const CACHE_NAME = "noesis-paper-companion-v1";
+const CACHE_NAME = "noesis-paper-companion-v2";
 const ASSETS = [
   "./",
   "./index.html",

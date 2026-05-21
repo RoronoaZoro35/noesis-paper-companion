@@ -7,370 +7,244 @@
   <meta name="theme-color" content="#126b61">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <title>Noesis 文献陪读台 v0</title>
+  <title>Noesis Paper Companion v1</title>
   <style>
     :root {
       color-scheme: light;
-      --bg: #f7f5ef;
-      --surface: #fffdf8;
-      --surface-2: #f0f6f4;
-      --ink: #202523;
+      --bg: #f3f6f8;
+      --surface: #ffffff;
+      --panel: #f8fbfb;
+      --ink: #1f2522;
       --muted: #68716d;
-      --line: #d9d5ca;
+      --line: #d5dee2;
+      --soft: #e8f4f1;
       --teal: #126b61;
       --teal-2: #0f4f48;
       --amber: #b56a1d;
-      --rose: #8d3f48;
-      --shadow: 0 12px 28px rgba(32, 37, 35, 0.09);
+      --red: #8d3f48;
+      --shadow: 0 12px 26px rgba(31, 37, 34, 0.08);
       --radius: 8px;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Hiragino Sans GB", sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      letter-spacing: 0;
-    }
-
-    a {
-      color: var(--teal-2);
-      text-decoration: none;
-      border-bottom: 1px solid rgba(18, 107, 97, 0.28);
-    }
-
-    a:hover {
-      border-color: var(--teal-2);
-    }
-
-    button,
-    textarea,
-    input {
-      font: inherit;
-    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); letter-spacing: 0; }
+    button, input, textarea, select { font: inherit; }
+    a { color: var(--teal-2); text-decoration: none; border-bottom: 1px solid rgba(18, 107, 97, .26); }
+    a:hover { border-color: var(--teal-2); }
 
     .app {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: 248px minmax(0, 1fr) 340px;
+      grid-template-columns: 260px minmax(0, 1fr) 370px;
     }
 
-    .rail {
-      border-right: 1px solid var(--line);
-      background: #fbfaf6;
-      padding: 24px 18px;
-      position: sticky;
-      top: 0;
+    .rail, .assistant {
+      background: var(--panel);
       height: 100vh;
       overflow: auto;
+      position: sticky;
+      top: 0;
+      padding: 18px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 30px;
-    }
+    .rail { border-right: 1px solid var(--line); }
+    .assistant { border-left: 1px solid var(--line); }
+    .main { min-width: 0; padding: 20px clamp(14px, 3vw, 34px) 38px; }
 
+    .brand { display: flex; gap: 11px; align-items: center; margin-bottom: 22px; }
     .mark {
-      width: 36px;
-      height: 36px;
-      border: 1px solid var(--teal);
-      display: grid;
-      place-items: center;
-      color: var(--teal);
-      font-weight: 800;
-      border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--teal); color: var(--teal);
+      display: grid; place-items: center; font-weight: 800;
     }
+    .brand strong { display: block; line-height: 1.15; }
+    .sub, .small { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .section-title { margin: 20px 0 9px; color: var(--muted); font-size: 12px; font-weight: 750; text-transform: uppercase; }
 
-    .brand strong {
-      display: block;
-      font-size: 16px;
-      line-height: 1.1;
-    }
-
-    .brand span,
-    .small {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .section-title {
-      margin: 22px 0 10px;
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    .nav-list {
-      display: grid;
-      gap: 7px;
-    }
-
-    .nav-item {
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--ink);
-      text-align: left;
-      padding: 9px 10px;
+    .source-card, .panel, .reader-card {
+      border: 1px solid var(--line);
+      background: var(--surface);
       border-radius: var(--radius);
-      cursor: pointer;
-      line-height: 1.35;
-      font-size: 14px;
+      box-shadow: none;
     }
 
-    .nav-item.active,
-    .nav-item:hover {
-      background: var(--surface-2);
-      border-color: rgba(18, 107, 97, 0.2);
-    }
-
-    .progress {
-      margin-top: 22px;
-      border-top: 1px solid var(--line);
-      padding-top: 18px;
-    }
-
-    .bar {
-      height: 7px;
-      background: #e6e1d5;
-      border-radius: 999px;
-      overflow: hidden;
-      margin: 10px 0 6px;
-    }
-
-    .bar span {
-      display: block;
-      height: 100%;
-      width: 0%;
-      background: var(--teal);
-      transition: width 0.2s ease;
-    }
-
-    .paper {
-      padding: 34px clamp(22px, 4vw, 58px) 64px;
-      max-width: 980px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    .paper-header {
-      display: grid;
-      gap: 16px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 46px);
-      line-height: 1.08;
-      letter-spacing: 0;
-      max-width: 850px;
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 14px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-    }
+    .source-card { padding: 12px; display: grid; gap: 8px; }
+    .source-card.active { border-color: rgba(18, 107, 97, .55); background: var(--soft); }
+    .source-card strong { font-size: 14px; line-height: 1.35; }
 
     .btn {
       border: 1px solid var(--line);
       background: var(--surface);
       color: var(--ink);
       border-radius: var(--radius);
-      padding: 9px 12px;
+      padding: 8px 10px;
+      min-height: 36px;
       cursor: pointer;
-      min-height: 38px;
       line-height: 1.2;
-      box-shadow: none;
     }
+    .btn:hover { border-color: var(--teal); }
+    .btn.primary { background: var(--teal); color: white; border-color: var(--teal); }
+    .btn.warn { border-color: rgba(181, 106, 29, .45); color: #6d4215; background: #fff8ed; }
+    .btn.ghost { background: transparent; }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-    .btn.primary {
-      background: var(--teal);
-      border-color: var(--teal);
-      color: white;
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--ink);
+      padding: 9px 10px;
     }
+    textarea { resize: vertical; min-height: 74px; line-height: 1.55; }
+    label { display: block; color: var(--muted); font-size: 12px; font-weight: 750; margin-bottom: 7px; }
 
-    .btn:hover {
-      border-color: var(--teal);
-    }
+    h1 { margin: 0; font-size: clamp(23px, 3vw, 34px); line-height: 1.13; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 20px; line-height: 1.25; }
+    h3 { margin: 0 0 8px; font-size: 15px; line-height: 1.35; }
+    p, li { font-size: 15px; line-height: 1.72; }
+    p { margin: 0 0 10px; }
 
-    .block {
-      padding: 30px 0;
+    .reader-head {
+      display: grid;
+      gap: 13px;
+      padding-bottom: 16px;
       border-bottom: 1px solid var(--line);
-      scroll-margin-top: 18px;
+      margin-bottom: 16px;
     }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px 14px; color: var(--muted); font-size: 13px; }
 
-    h2 {
-      margin: 0 0 14px;
-      font-size: 24px;
-      line-height: 1.2;
-      letter-spacing: 0;
-    }
-
-    h3 {
-      margin: 20px 0 8px;
-      font-size: 17px;
-      line-height: 1.35;
-    }
-
-    p,
-    li {
-      font-size: 16px;
-      line-height: 1.78;
-    }
-
-    p {
-      margin: 0 0 12px;
-    }
-
-    ul,
-    ol {
-      padding-left: 22px;
-      margin: 10px 0 0;
-    }
-
-    .callout {
-      border-left: 4px solid var(--teal);
-      background: var(--surface);
-      padding: 14px 16px;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      box-shadow: var(--shadow);
-    }
-
-    .callout.warn {
-      border-left-color: var(--amber);
-      box-shadow: none;
-      background: #fff8ed;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .tile {
+    .tabs { display: flex; gap: 7px; flex-wrap: wrap; }
+    .tab {
       border: 1px solid var(--line);
       background: var(--surface);
       border-radius: var(--radius);
-      padding: 14px;
-      min-height: 116px;
-    }
-
-    .tile strong {
-      display: block;
-      margin-bottom: 7px;
-    }
-
-    .term {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 12px 13px;
+      padding: 8px 10px;
       cursor: pointer;
+      color: var(--ink);
     }
+    .tab.active { background: var(--teal); color: white; border-color: var(--teal); }
 
-    .term + .term {
-      margin-top: 8px;
-    }
-
-    .term:hover {
-      border-color: var(--teal);
-    }
-
-    .term b {
-      color: var(--teal-2);
-    }
-
-    .checklist {
+    .viewer-grid { display: grid; gap: 12px; }
+    .toolbar {
       display: grid;
       gap: 10px;
-      margin-top: 14px;
-    }
-
-    .check {
-      display: grid;
-      grid-template-columns: 22px minmax(0, 1fr);
-      gap: 10px;
-      align-items: start;
       padding: 12px;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      border-radius: var(--radius);
-    }
-
-    .check input {
-      width: 18px;
-      height: 18px;
-      margin-top: 3px;
-      accent-color: var(--teal);
-    }
-
-    .assistant {
-      border-left: 1px solid var(--line);
-      background: #fbfaf6;
-      padding: 22px 18px;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow: auto;
-    }
-
-    .assistant h2 {
-      font-size: 19px;
-    }
-
-    .panel {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 14px;
       margin-bottom: 12px;
     }
+    .toolbar-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+    .page-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .page-counter { color: var(--muted); font-size: 13px; min-width: 86px; text-align: center; }
 
-    .panel label {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 7px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 72px;
+    .pdf-shell {
+      overflow: auto;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: 10px;
-      resize: vertical;
-      background: #fffefb;
-      color: var(--ink);
+      background: #dfe5e9;
+      min-height: 58vh;
+      display: grid;
+      place-items: start center;
+      padding: 14px;
+    }
+    .pdf-page { position: relative; background: white; box-shadow: var(--shadow); }
+    canvas { display: block; max-width: none; }
+    .text-layer {
+      position: absolute;
+      inset: 0;
+      color: transparent;
+      overflow: hidden;
+      opacity: .18;
+      line-height: 1;
+      user-select: text;
+    }
+    .text-layer span {
+      position: absolute;
+      white-space: pre;
+      transform-origin: 0% 0%;
+      color: transparent;
+    }
+
+    .plain-text {
+      display: none;
+      padding: 18px;
+      max-width: 920px;
+      margin: 0 auto;
+      line-height: 1.85;
+      white-space: pre-wrap;
+      user-select: text;
+    }
+    .plain-text.active { display: block; }
+    .pdf-view.hidden { display: none; }
+
+    .hint {
+      background: #fff8ed;
+      border-left: 4px solid var(--amber);
+      padding: 11px 13px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      color: #493016;
+      font-size: 14px;
       line-height: 1.6;
     }
 
-    .note-row {
+    .panel { padding: 13px; margin-bottom: 12px; }
+    .assistant h2 { font-size: 18px; margin-bottom: 12px; }
+    .assistant-status { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .chat {
       display: grid;
       gap: 10px;
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    .msg {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px;
+      background: #ffffff;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .msg.user { border-color: rgba(18, 107, 97, .32); background: var(--soft); }
+    .msg.ai { background: #222823; color: #f7f5ef; border-color: #222823; }
+    .msg small { display: block; color: var(--muted); margin-bottom: 4px; }
+    .msg.ai small { color: #cbd7d2; }
+
+    .selection-pop {
+      position: fixed;
+      z-index: 30;
+      display: none;
+      width: min(420px, calc(100vw - 28px));
+      background: #222823;
+      color: white;
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: 0 18px 45px rgba(31, 37, 34, .3);
+    }
+    .selection-pop strong { display: block; font-size: 13px; margin-bottom: 8px; line-height: 1.35; }
+    .pop-buttons { display: flex; gap: 7px; flex-wrap: wrap; }
+    .pop-buttons button {
+      border: 1px solid rgba(255, 255, 255, .2);
+      background: rgba(255, 255, 255, .08);
+      color: white;
+      border-radius: 6px;
+      padding: 7px 8px;
+      cursor: pointer;
+      font-size: 13px;
     }
 
+    .five-lines { display: grid; gap: 10px; }
+    .term-list { display: grid; gap: 8px; }
+    .term-chip {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 9px;
+      background: #ffffff;
+      font-size: 13px;
+      line-height: 1.55;
+    }
     .output {
       white-space: pre-wrap;
       word-break: break-word;
@@ -380,65 +254,26 @@
       padding: 12px;
       font-size: 13px;
       line-height: 1.55;
-      max-height: 240px;
+      max-height: 220px;
       overflow: auto;
     }
-
-    .selection-pop {
-      position: fixed;
-      z-index: 10;
-      display: none;
-      width: min(360px, calc(100vw - 28px));
-      background: #222823;
-      color: #fffdf8;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: var(--radius);
-      box-shadow: 0 18px 45px rgba(32, 37, 35, 0.3);
-      padding: 12px;
-    }
-
-    .selection-pop strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
-
-    .pop-buttons {
-      display: flex;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
-
-    .pop-buttons button {
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      background: rgba(255, 255, 255, 0.08);
-      color: white;
-      border-radius: 6px;
-      padding: 7px 9px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
     .toast {
       position: fixed;
       right: 18px;
       bottom: 18px;
+      display: none;
+      z-index: 40;
       background: var(--ink);
       color: white;
-      padding: 10px 12px;
       border-radius: var(--radius);
-      display: none;
-      max-width: 320px;
-      line-height: 1.45;
+      padding: 10px 12px;
+      max-width: 340px;
       font-size: 14px;
-      z-index: 20;
+      line-height: 1.45;
     }
 
-    @media (max-width: 1120px) {
-      .app {
-        grid-template-columns: 210px minmax(0, 1fr);
-      }
-
+    @media (max-width: 1180px) {
+      .app { grid-template-columns: 230px minmax(0, 1fr); }
       .assistant {
         grid-column: 1 / -1;
         position: static;
@@ -449,41 +284,17 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
       }
-
-      .assistant > h2 {
-        grid-column: 1 / -1;
-      }
+      .assistant > h2 { grid-column: 1 / -1; }
     }
 
     @media (max-width: 760px) {
-      .app {
-        display: block;
-      }
-
-      .rail {
-        position: static;
-        height: auto;
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
-        padding: 18px;
-      }
-
-      .nav-list {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .paper {
-        padding: 26px 18px 38px;
-      }
-
-      .grid,
-      .assistant {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        font-size: 30px;
-      }
+      .app { display: block; }
+      .rail, .assistant { position: static; height: auto; border: 0; border-bottom: 1px solid var(--line); }
+      .main { padding: 16px 12px 26px; }
+      .toolbar-line { grid-template-columns: 1fr; }
+      .pdf-shell { min-height: 62vh; padding: 8px; justify-content: start; }
+      .assistant { display: block; }
+      h1 { font-size: 24px; }
     }
   </style>
 </head>
@@ -493,146 +304,143 @@
       <div class="brand">
         <div class="mark">N</div>
         <div>
-          <strong>文献陪读台</strong>
-          <span>Noesis v0</span>
+          <strong>Paper Companion</strong>
+          <span class="sub">Noesis v1 reader</span>
         </div>
       </div>
 
-      <div class="section-title">今晚论文</div>
-      <div class="small">柳澤琢史 / Takufumi Yanagisawa 相关 neuroinformatics 论文</div>
-
-      <div class="section-title">阅读区</div>
-      <nav class="nav-list" aria-label="paper sections">
-        <button class="nav-item active" data-target="why">为什么读</button>
-        <button class="nav-item" data-target="terms">先懂术语</button>
-        <button class="nav-item" data-target="questions">带着问题</button>
-        <button class="nav-item" data-target="route">怎么读</button>
-        <button class="nav-item" data-target="figures">图表优先</button>
-        <button class="nav-item" data-target="output">读后五行</button>
-      </nav>
-
-      <div class="progress">
-        <strong>完成度</strong>
-        <div class="bar" aria-hidden="true"><span id="progressBar"></span></div>
-        <div class="small" id="progressText">0 / 6</div>
+      <div class="section-title">Library</div>
+      <div class="source-card active">
+        <strong>Brain-aligning of semantic vectors improves neural decoding of visual stimuli</strong>
+        <span class="small">柳澤琢史 / Takufumi Yanagisawa line</span>
+        <span class="small">arXiv PDF + official article links</span>
       </div>
+
+      <div class="section-title">Official Sources</div>
+      <div class="btn-row">
+        <a class="btn" href="https://arxiv.org/pdf/2403.15176" target="_blank" rel="noreferrer">PDF</a>
+        <a class="btn" href="https://www.nature.com/articles/s42003-025-09482-x" target="_blank" rel="noreferrer">Nature</a>
+        <a class="btn" href="https://pubmed.ncbi.nlm.nih.gov/41484392/" target="_blank" rel="noreferrer">PubMed</a>
+      </div>
+
+      <div class="section-title">Reader Rules</div>
+      <p class="small">原文/PDF 只从官方链接或本地上传读取，不把论文全文放进仓库。笔记和 API key 只保存在当前浏览器本地。</p>
     </aside>
 
-    <main class="paper">
-      <header class="paper-header">
+    <main class="main">
+      <header class="reader-head">
         <h1>Brain-aligning of semantic vectors improves neural decoding of visual stimuli</h1>
         <div class="meta">
           <span>Communications Biology, 2026</span>
           <span>Vafaei, Fukuma, Yanagisawa et al.</span>
           <span>PMID: 41484392</span>
-          <span>DOI: 10.1038/s42003-025-09482-x</span>
+          <span>arXiv: 2403.15176</span>
         </div>
-        <div class="actions">
-          <a class="btn primary" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12891520/" target="_blank" rel="noreferrer">打开 PMC</a>
-          <a class="btn" href="https://www.nature.com/articles/s42003-025-09482-x" target="_blank" rel="noreferrer">打开 Nature</a>
-          <button class="btn" id="exportBtn">生成 Markdown</button>
-          <button class="btn" id="resetBtn">清空本页笔记</button>
-        </div>
+        <div class="hint">现在这是阅读器，不只是任务卡。先加载 PDF，选中英文原文后用浮窗解释、翻译或申请化；右侧可以接 AI，也可以复制 prompt 给我。</div>
       </header>
 
-      <section class="block" id="why">
-        <h2>为什么今晚读它</h2>
-        <div class="callout">
-          <p>这篇论文比一般 BMI 综述更适合当前申请：它直接连接柳澤老师的神経情報学、神经解码、fMRI / MEG / ECoG 多模态脑数据，以及“AI 表征如何和脑活动对齐”这个可写进 AAD/SOP 的问题。</p>
+      <section class="reader-card toolbar">
+        <div class="toolbar-line">
+          <input id="pdfUrl" value="https://arxiv.org/pdf/2403.15176" aria-label="PDF URL">
+          <div class="btn-row">
+            <button class="btn primary" id="loadPdfBtn">加载 PDF</button>
+            <label class="btn" for="uploadPdf">上传 PDF</label>
+            <input id="uploadPdf" type="file" accept="application/pdf" style="display:none">
+          </div>
         </div>
-        <div class="checklist">
-          <label class="check"><input type="checkbox" data-check="why1"><span>我能用一句话说清楚：本文研究的不是“读心术”，而是神经解码中的表征对齐问题。</span></label>
-          <label class="check"><input type="checkbox" data-check="why2"><span>我能说出它为什么和柳澤老师相关：neuroinformatics、ECoG、神经解码、临床神经外科数据。</span></label>
-        </div>
-      </section>
-
-      <section class="block" id="terms">
-        <h2>先懂术语</h2>
-        <p>先点这些词，不需要全部掌握，今晚只要能把它们和论文问题连起来。</p>
-        <div class="term" data-term="Neural decoding"><b>Neural decoding</b>：从脑活动中推测刺激、动作意图或认知内容。</div>
-        <div class="term" data-term="Semantic vector"><b>Semantic vector</b>：把图像、文字或概念变成机器可计算的向量。</div>
-        <div class="term" data-term="Brain-aligning"><b>Brain-aligning</b>：让预训练模型的向量空间更接近脑活动的表征结构。</div>
-        <div class="term" data-term="fMRI / MEG / ECoG"><b>fMRI / MEG / ECoG</b>：空间分辨率、时间分辨率和侵入性各不相同的脑活动测量方式。</div>
-        <div class="term" data-term="Zero-shot decoding"><b>Zero-shot decoding</b>：尝试解码训练中没出现过的新类别，考察泛化能力。</div>
-      </section>
-
-      <section class="block" id="questions">
-        <h2>带着问题读</h2>
-        <div class="grid">
-          <div class="tile"><strong>问题 1</strong>作者为什么不直接用普通 CLIP / GloVe 向量，而要做 brain-aligning？</div>
-          <div class="tile"><strong>问题 2</strong>输入到底是什么：图像、标签、脑信号、语义向量之间怎么对应？</div>
-          <div class="tile"><strong>问题 3</strong>fMRI、MEG、ECoG 各自贡献什么？为什么跨模态测试有意义？</div>
-          <div class="tile"><strong>问题 4</strong>“improves decoding”具体改善了什么指标，而不是笼统说 AI 更准？</div>
-          <div class="tile"><strong>问题 5</strong>这离真实 BCI / 临床应用还有多远？边界在哪里？</div>
-          <div class="tile"><strong>问题 6</strong>能不能提出一个自然问题，用在将来给柳澤老师的邮件或面试里？</div>
+        <div class="page-tools">
+          <button class="btn" id="prevPage">上一页</button>
+          <span class="page-counter" id="pageCounter">未加载</span>
+          <button class="btn" id="nextPage">下一页</button>
+          <button class="btn" id="zoomOut">缩小</button>
+          <span class="small" id="zoomLabel">120%</span>
+          <button class="btn" id="zoomIn">放大</button>
+          <button class="btn" id="copyPageText">复制本页原文</button>
         </div>
       </section>
 
-      <section class="block" id="route">
-        <h2>今晚怎么读</h2>
-        <ol>
-          <li>先读 Abstract，只找研究问题和结论。</li>
-          <li>读 Introduction 最后一到两段，确认作者说的 gap。</li>
-          <li>看 Figure 1，不要先陷入公式。</li>
-          <li>扫 Results 小标题，找“fMRI / MEG / ECoG”分别出现在哪里。</li>
-          <li>读 Discussion 前三段，摘一句最能说明研究意义的话，用自己的中文改写。</li>
-        </ol>
-        <div class="callout warn">
-          <p>今晚不要硬啃 Methods。只查一个问题：作者的数据、模型和评价指标分别是什么。</p>
-        </div>
-      </section>
+      <div class="tabs" aria-label="reader tabs">
+        <button class="tab active" data-view="pdf">PDF 原版</button>
+        <button class="tab" data-view="text">本页原文文本</button>
+        <button class="tab" data-view="guide">带读问题</button>
+      </div>
 
-      <section class="block" id="figures">
-        <h2>图表优先</h2>
-        <div class="grid">
-          <div class="tile"><strong>Fig. 1</strong>看 workflow：预训练向量怎样被脑活动表征“拉近”。</div>
-          <div class="tile"><strong>Fig. 2</strong>看 decoding：脑活动预测出的语义向量如何和候选刺激比较。</div>
-          <div class="tile"><strong>Fig. 3</strong>看不同 ROI 和 alignment 强度：不要把一个区域结果泛化到全部脑区。</div>
-          <div class="tile"><strong>MEG / ECoG</strong>看跨模态验证：这是申请 neuroinformatics 时最值得抓的点。</div>
+      <section class="viewer-grid">
+        <div class="pdf-view" id="pdfView">
+          <div class="pdf-shell">
+            <div class="pdf-page" id="pdfPage">
+              <canvas id="pdfCanvas"></canvas>
+              <div class="text-layer" id="textLayer"></div>
+            </div>
+          </div>
         </div>
-      </section>
 
-      <section class="block" id="output">
-        <h2>读后五行</h2>
-        <p>写中文就行。不要追求漂亮，先追求真实。</p>
-        <div class="checklist">
-          <label class="check"><input type="checkbox" data-check="out1"><span>完成一句话总结。</span></label>
-          <label class="check"><input type="checkbox" data-check="out2"><span>写出一个对申请最有用的点。</span></label>
-          <label class="check"><input type="checkbox" data-check="out3"><span>列出至少一个没懂的问题。</span></label>
-          <label class="check"><input type="checkbox" data-check="out4"><span>写出一句可以改造成 AAD/SOP 素材的中文。</span></label>
-          <label class="check"><input type="checkbox" data-check="out5"><span>写出一个可以问柳澤老师的问题。</span></label>
-        </div>
+        <article class="plain-text" id="textView">加载 PDF 后，这里会显示当前页可选择的英文原文文本。</article>
+
+        <article class="plain-text" id="guideView">
+          <h2>这篇论文读什么</h2>
+          <p><strong>核心问题：</strong>为什么要把预训练语义向量与脑活动表征结构对齐，而不是只训练一个更强的下游分类器？</p>
+          <p><strong>今晚顺序：</strong>Abstract -> Fig. 1 -> Results 小标题 -> fMRI/MEG/ECoG generalization -> Discussion 前三段。</p>
+          <p><strong>申请连接：</strong>这条线可以写成 neuroinformatics + neural decoding + ECoG clinical data，而不是泛泛说 AI 医学。</p>
+          <p><strong>风险边界：</strong>不要把 zero-shot identification 写成临床可用的读心或沟通设备。</p>
+        </article>
       </section>
     </main>
 
     <aside class="assistant">
-      <h2>AI 陪读区</h2>
+      <h2>AI 助手与笔记</h2>
+
       <div class="panel">
-        <label for="oneLine">1. 这篇论文一句话</label>
-        <textarea id="oneLine" data-note="oneLine" placeholder="例如：这篇论文研究如何让语义向量更贴近脑活动表征，从而提高视觉刺激的神经解码。"></textarea>
-      </div>
-      <div class="panel">
-        <label for="useful">2. 最有用的点</label>
-        <textarea id="useful" data-note="useful" placeholder="写你觉得能服务 AAD / 套磁 / 面试的点。"></textarea>
-      </div>
-      <div class="panel">
-        <label for="confused">3. 没懂的地方</label>
-        <textarea id="confused" data-note="confused" placeholder="不懂很正常，问题越具体越好。"></textarea>
-      </div>
-      <div class="panel">
-        <label for="sopLine">4. 可写进 AAD/SOP 的中文</label>
-        <textarea id="sopLine" data-note="sopLine" placeholder="先写中文，不要写得太像最终文书。"></textarea>
-      </div>
-      <div class="panel">
-        <label for="mentorQuestion">5. 想问导师的问题</label>
-        <textarea id="mentorQuestion" data-note="mentorQuestion" placeholder="围绕论文方法、数据、实验室未来方向提问。"></textarea>
-      </div>
-      <div class="panel">
-        <label>生成结果</label>
-        <div class="note-row">
-          <button class="btn primary" id="makePromptBtn">生成给 Codex 的陪读复盘</button>
-          <div class="output" id="markdownOutput">这里会出现 Markdown。</div>
+        <label for="apiKey">OpenAI API key（可选，本机保存）</label>
+        <input id="apiKey" type="password" placeholder="不填也能生成 prompt；填了可尝试直接问 AI">
+        <div class="btn-row" style="margin-top:8px">
+          <select id="modelSelect" aria-label="model">
+            <option value="gpt-5.2-mini">gpt-5.2-mini</option>
+            <option value="gpt-5.2">gpt-5.2</option>
+          </select>
+          <button class="btn" id="saveKeyBtn">保存本机</button>
+          <button class="btn warn" id="clearKeyBtn">清除</button>
         </div>
+        <p class="assistant-status" id="aiStatus">未连接 AI。选中文本后可生成 prompt；填入 key 后尝试直连 OpenAI Responses API。若浏览器拦截，会自动回退为 prompt 模式。</p>
+      </div>
+
+      <div class="panel">
+        <label for="askBox">向陪读 AI 提问</label>
+        <textarea id="askBox" placeholder="例如：用中文解释我选中的这段，并告诉我能不能写进 AAD。"></textarea>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn primary" id="askAiBtn">问 AI</button>
+          <button class="btn" id="copyPromptBtn">复制 prompt</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="chat" id="chatLog">
+          <div class="msg ai"><small>AI helper</small>选中 PDF 或原文文本后，我可以帮你解释、翻译、申请化。没有 API key 时，我会把高质量 prompt 复制出来给你发给 Codex/ChatGPT。</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>五行输出</h3>
+        <div class="five-lines">
+          <textarea data-note="oneLine" placeholder="1. 这篇论文一句话"></textarea>
+          <textarea data-note="useful" placeholder="2. 我觉得最有用的点"></textarea>
+          <textarea data-note="confused" placeholder="3. 我没懂的地方"></textarea>
+          <textarea data-note="sopLine" placeholder="4. 可以写进 AAD/SOP 的一句中文"></textarea>
+          <textarea data-note="mentorQuestion" placeholder="5. 我想问柳澤老师的一个问题"></textarea>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>术语卡</h3>
+        <div class="term-list" id="termList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="btn-row">
+          <button class="btn primary" id="exportBtn">导出 Markdown</button>
+          <button class="btn warn" id="resetBtn">清空笔记</button>
+        </div>
+        <div class="output" id="markdownOutput" style="margin-top:10px">导出内容会显示在这里。</div>
       </div>
     </aside>
   </div>
@@ -640,45 +448,222 @@
   <div class="selection-pop" id="selectionPop" role="dialog" aria-live="polite">
     <strong id="selectionText">已选中文字</strong>
     <div class="pop-buttons">
-      <button data-pop="explain">小白解释</button>
-      <button data-pop="translate">翻译成中文</button>
-      <button data-pop="apply">申请化表达</button>
+      <button data-mode="explain">解释</button>
+      <button data-mode="translate">翻译</button>
+      <button data-mode="apply">申请化</button>
+      <button data-mode="term">做术语卡</button>
     </div>
   </div>
-
   <div class="toast" id="toast"></div>
 
   <script>
-    const noteKey = "noesis.paperCompanion.yanagisawa2026";
-    const checksKey = "noesis.paperCompanion.yanagisawa2026.checks";
-    const termMap = {
-      "Neural decoding": "可以理解成：把脑活动当作输入，反推人看到、想做或正在处理的内容。申请表达里要避免把它写成实用读心术。",
-      "Semantic vector": "把文字、图像或概念压缩成一串数字，模型用这些数字比较相似性。",
-      "Brain-aligning": "本文的核心：不是只训练更大的分类器，而是让模型表征更符合脑活动的相似性结构。",
-      "fMRI / MEG / ECoG": "fMRI 空间定位好，MEG 时间分辨率好，ECoG 来自颅内电极，和神经外科/癫痫中心更近。",
-      "Zero-shot decoding": "训练时没见过的新类别也要尝试识别，能体现模型是不是学到了可泛化的表征。"
-    };
+    const PDF_JS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs";
+    const PDF_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs";
+    const noteKey = "noesis.paperCompanion.v1.notes";
+    const termKey = "noesis.paperCompanion.v1.terms";
+    const keyKey = "noesis.paperCompanion.v1.openaiKey";
 
+    let pdfjsLib = null;
+    let pdfDoc = null;
+    let currentPage = 1;
+    let scale = 1.2;
+    let selectedText = "";
+    let pagePlainText = "";
+
+    const $ = (id) => document.getElementById(id);
     const fields = Array.from(document.querySelectorAll("[data-note]"));
-    const checks = Array.from(document.querySelectorAll("[data-check]"));
-    const pop = document.getElementById("selectionPop");
-    const selectionText = document.getElementById("selectionText");
-    const toast = document.getElementById("toast");
-    const output = document.getElementById("markdownOutput");
+    const pop = $("selectionPop");
+    const selectionText = $("selectionText");
+    const toast = $("toast");
+    const chatLog = $("chatLog");
 
     function readJson(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+      catch { return fallback; }
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.style.display = "block";
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => { toast.style.display = "none"; }, 2800);
+    }
+
+    async function copyText(text) {
       try {
-        return JSON.parse(localStorage.getItem(key)) || fallback;
+        await navigator.clipboard.writeText(text);
+        showToast("已复制。");
       } catch {
-        return fallback;
+        $("markdownOutput").textContent = text;
+        showToast("无法自动复制，已放到导出区。");
       }
+    }
+
+    function addMessage(role, text) {
+      const div = document.createElement("div");
+      div.className = `msg ${role}`;
+      div.innerHTML = `<small>${role === "user" ? "You" : "AI helper"}</small>${escapeHtml(text)}`;
+      chatLog.appendChild(div);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[ch]);
+    }
+
+    async function ensurePdfJs() {
+      if (pdfjsLib) return pdfjsLib;
+      $("pageCounter").textContent = "加载 PDF.js...";
+      pdfjsLib = await import(PDF_JS_URL);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL;
+      return pdfjsLib;
+    }
+
+    async function loadPdf(source) {
+      try {
+        const lib = await ensurePdfJs();
+        $("pageCounter").textContent = "加载 PDF...";
+        pdfDoc = await lib.getDocument(source).promise;
+        currentPage = 1;
+        await renderPage();
+        showToast("PDF 已加载。选中原文可解释/翻译。");
+      } catch (error) {
+        console.error(error);
+        $("pageCounter").textContent = "加载失败";
+        showToast("PDF 加载失败。可打开官方 PDF 后下载，再用“上传 PDF”。");
+      }
+    }
+
+    async function renderPage() {
+      if (!pdfDoc) return;
+      const page = await pdfDoc.getPage(currentPage);
+      const viewport = page.getViewport({ scale });
+      const canvas = $("pdfCanvas");
+      const context = canvas.getContext("2d");
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      $("pdfPage").style.width = `${canvas.width}px`;
+      $("pdfPage").style.height = `${canvas.height}px`;
+      await page.render({ canvasContext: context, viewport }).promise;
+      const textContent = await page.getTextContent();
+      pagePlainText = textContent.items.map((item) => item.str).join(" ").replace(/\s+/g, " ").trim();
+      $("textView").textContent = pagePlainText || "本页没有可提取文本。";
+      renderTextLayer(textContent, viewport);
+      $("pageCounter").textContent = `${currentPage} / ${pdfDoc.numPages}`;
+      $("zoomLabel").textContent = `${Math.round(scale * 100)}%`;
+    }
+
+    function renderTextLayer(textContent, viewport) {
+      const layer = $("textLayer");
+      layer.innerHTML = "";
+      layer.style.width = `${viewport.width}px`;
+      layer.style.height = `${viewport.height}px`;
+      textContent.items.forEach((item) => {
+        if (!item.str.trim()) return;
+        const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+        const span = document.createElement("span");
+        span.textContent = item.str;
+        span.style.left = `${tx[4]}px`;
+        span.style.top = `${tx[5]}px`;
+        span.style.fontSize = `${Math.max(8, Math.hypot(tx[2], tx[3]))}px`;
+        span.style.transform = `scaleX(${Math.max(0.6, item.width / Math.max(1, item.str.length * 6))})`;
+        layer.appendChild(span);
+      });
+    }
+
+    function setView(view) {
+      document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
+      $("pdfView").classList.toggle("hidden", view !== "pdf");
+      $("textView").classList.toggle("active", view === "text");
+      $("guideView").classList.toggle("active", view === "guide");
+    }
+
+    function getContextText() {
+      return [
+        "Paper: Brain-aligning of semantic vectors improves neural decoding of visual stimuli.",
+        "Target mentor line: 柳澤琢史 / Takufumi Yanagisawa, Osaka neuroinformatics / BCI.",
+        `Current page: ${pdfDoc ? `${currentPage}/${pdfDoc.numPages}` : "not loaded"}.`,
+        selectedText ? `Selected text:\n${selectedText}` : "",
+        pagePlainText ? `Current page excerpt:\n${pagePlainText.slice(0, 1400)}` : ""
+      ].filter(Boolean).join("\n\n");
+    }
+
+    function buildPrompt(mode, extraQuestion = "") {
+      const taskMap = {
+        explain: "用中文小白版解释选中的论文原文。解释必须准确，不要夸大。最后说明它和 neuroinformatics / BCI / ECoG 的关系。",
+        translate: "把选中的学术英文翻译成自然中文。保留关键术语，并列出 3 个需要背的词。",
+        apply: "把选中内容转成日本医学博士申请可用的真实兴趣表达。要求：有人味、低密度、不能说成已经掌握技术、不能夸大为临床产品。",
+        term: "把选中内容整理成一个术语卡：英文术语、中文解释、论文中作用、申请中怎么说、不能怎么说。",
+        free: extraQuestion || "请根据当前论文上下文回答我的问题。"
+      };
+      return `${taskMap[mode] || taskMap.free}
+
+${getContextText()}
+
+我的问题：
+${extraQuestion || "(无)"}`;
+    }
+
+    async function askAi(mode, extraQuestion = "") {
+      const prompt = buildPrompt(mode, extraQuestion);
+      addMessage("user", prompt.length > 1200 ? `${prompt.slice(0, 1200)}\n\n...` : prompt);
+      const apiKey = $("apiKey").value.trim();
+      if (!apiKey) {
+        if (mode === "translate" && selectedText) {
+          const translateUrl = `https://translate.google.com/?sl=auto&tl=zh-CN&text=${encodeURIComponent(selectedText.slice(0, 5000))}&op=translate`;
+          window.open(translateUrl, "_blank", "noopener,noreferrer");
+        }
+        $("markdownOutput").textContent = prompt;
+        await copyText(prompt);
+        addMessage("ai", mode === "translate"
+          ? "未填写 API key。我已尝试打开外部翻译页，并把可直接发给 Codex/ChatGPT 的 prompt 复制出来。"
+          : "未填写 API key。我已把可直接发给 Codex/ChatGPT 的 prompt 复制出来。");
+        return;
+      }
+
+      $("aiStatus").textContent = "正在请求 AI...";
+      try {
+        const response = await fetch("https://api.openai.com/v1/responses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: $("modelSelect").value,
+            input: prompt,
+            instructions: "You are a rigorous bilingual paper-reading assistant for a Japanese medical PhD applicant. Answer in Chinese, preserve key English terms, and clearly mark application-safe claims and overclaim risks."
+          })
+        });
+        if (!response.ok) throw new Error(`${response.status} ${await response.text()}`);
+        const data = await response.json();
+        const text = data.output_text || extractOutputText(data) || "(AI 返回为空)";
+        addMessage("ai", text);
+        $("aiStatus").textContent = "AI 已返回。";
+      } catch (error) {
+        console.error(error);
+        $("aiStatus").textContent = "直接调用失败，已回退为 prompt 模式。";
+        $("markdownOutput").textContent = prompt;
+        await copyText(prompt);
+        addMessage("ai", "浏览器直连 API 失败。原因可能是 key、网络或 CORS。prompt 已复制，可以直接发给 Codex/ChatGPT。");
+      }
+    }
+
+    function extractOutputText(data) {
+      const chunks = [];
+      (data.output || []).forEach((item) => {
+        (item.content || []).forEach((content) => {
+          if (content.text) chunks.push(content.text);
+        });
+      });
+      return chunks.join("\n").trim();
     }
 
     function saveNotes() {
       const data = {};
-      fields.forEach((field) => {
-        data[field.dataset.note] = field.value;
-      });
+      fields.forEach((field) => { data[field.dataset.note] = field.value; });
       localStorage.setItem(noteKey, JSON.stringify(data));
     }
 
@@ -686,44 +671,42 @@
       const data = readJson(noteKey, {});
       fields.forEach((field) => {
         field.value = data[field.dataset.note] || "";
+        field.addEventListener("input", saveNotes);
       });
-      const checked = readJson(checksKey, {});
-      checks.forEach((box) => {
-        box.checked = Boolean(checked[box.dataset.check]);
-      });
-      updateProgress();
+      $("apiKey").value = localStorage.getItem(keyKey) || "";
+      renderTerms();
     }
 
-    function saveChecks() {
-      const data = {};
-      checks.forEach((box) => {
-        data[box.dataset.check] = box.checked;
-      });
-      localStorage.setItem(checksKey, JSON.stringify(data));
-      updateProgress();
+    function addTermCard(text) {
+      const terms = readJson(termKey, []);
+      terms.unshift({ text: text.slice(0, 800), created: new Date().toISOString() });
+      localStorage.setItem(termKey, JSON.stringify(terms.slice(0, 30)));
+      renderTerms();
+      showToast("已加入术语卡。");
     }
 
-    function updateProgress() {
-      const sectionIds = ["why1", "why2", "out1", "out2", "out3", "out4"];
-      const done = sectionIds.filter((id) => {
-        const box = document.querySelector(`[data-check="${id}"]`);
-        return box && box.checked;
-      }).length;
-      const total = sectionIds.length;
-      document.getElementById("progressBar").style.width = `${Math.round(done / total * 100)}%`;
-      document.getElementById("progressText").textContent = `${done} / ${total}`;
+    function renderTerms() {
+      const list = $("termList");
+      const terms = readJson(termKey, []);
+      list.innerHTML = terms.length ? "" : '<div class="small">选中术语后点“做术语卡”。</div>';
+      terms.forEach((term) => {
+        const div = document.createElement("div");
+        div.className = "term-chip";
+        div.textContent = term.text;
+        list.appendChild(div);
+      });
     }
 
     function makeMarkdown() {
       const data = {};
-      fields.forEach((field) => {
-        data[field.dataset.note] = field.value.trim();
-      });
-      return `# Yanagisawa 2026 睡前陪读复盘
+      fields.forEach((field) => { data[field.dataset.note] = field.value.trim(); });
+      const terms = readJson(termKey, []).map((term, index) => `${index + 1}. ${term.text}`).join("\n");
+      return `# Yanagisawa 2026 阅读复盘
 
 论文：Brain-aligning of semantic vectors improves neural decoding of visual stimuli
 导师线：柳澤琢史 / Takufumi Yanagisawa
-来源：https://pmc.ncbi.nlm.nih.gov/articles/PMC12891520/
+PDF：https://arxiv.org/pdf/2403.15176
+Nature：https://www.nature.com/articles/s42003-025-09482-x
 
 ## 五行输出
 
@@ -742,104 +725,73 @@ ${data.sopLine || "- "}
 5. 我想问柳澤老师的一个问题：
 ${data.mentorQuestion || "- "}
 
-## 请 Codex 下一步帮我
+## 术语卡
+
+${terms || "- "}
+
+## 请 Noesis 下一步帮我
 
 - 检查我有没有误解论文。
-- 把第 4 行改成更自然但不夸大的申请素材。
-- 把第 5 行改成可以用于套磁或面试的英文问题。
-- 标出哪些内容还需要回到论文图表确认。`;
+- 把第 4 行改成自然、不机械、不夸大的 AAD/SOP 素材。
+- 把第 5 行改成可用于套磁或面试的英文问题。
+- 标出哪些内容需要回到 PDF 图表确认。`;
     }
 
-    async function copyText(text) {
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast("已复制到剪贴板。");
-      } catch {
-        output.textContent = text;
-        showToast("浏览器不允许自动复制，已显示在右下方输出区。");
-      }
-    }
-
-    function showToast(text) {
-      toast.textContent = text;
-      toast.style.display = "block";
-      clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => {
-        toast.style.display = "none";
-      }, 2600);
-    }
-
-    document.querySelectorAll(".nav-item").forEach((button) => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
-        button.classList.add("active");
-        document.getElementById(button.dataset.target).scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-
-    fields.forEach((field) => field.addEventListener("input", saveNotes));
-    checks.forEach((box) => box.addEventListener("change", saveChecks));
-
-    document.querySelectorAll(".term").forEach((term) => {
-      term.addEventListener("click", () => {
-        showToast(termMap[term.dataset.term]);
-      });
+    document.addEventListener("selectionchange", () => {
+      const text = window.getSelection()?.toString().trim() || "";
+      if (text.length > 1) selectedText = text;
     });
 
     document.addEventListener("mouseup", () => {
-      const selection = window.getSelection();
-      const text = selection ? selection.toString().trim() : "";
-      if (!text || text.length < 2) {
-        pop.style.display = "none";
-        return;
-      }
-      const range = selection.getRangeAt(0);
+      const text = window.getSelection()?.toString().trim() || "";
+      if (!text || text.length < 2) { pop.style.display = "none"; return; }
+      selectedText = text;
+      const range = window.getSelection().getRangeAt(0);
       const rect = range.getBoundingClientRect();
-      selectionText.textContent = text.length > 70 ? `${text.slice(0, 70)}...` : text;
-      pop.style.left = `${Math.min(rect.left, window.innerWidth - 380)}px`;
+      selectionText.textContent = text.length > 90 ? `${text.slice(0, 90)}...` : text;
+      pop.style.left = `${Math.max(14, Math.min(rect.left, window.innerWidth - 434))}px`;
       pop.style.top = `${Math.max(12, rect.bottom + 8)}px`;
       pop.style.display = "block";
     });
 
-    document.querySelectorAll("[data-pop]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const selected = window.getSelection().toString().trim() || selectionText.textContent;
-        const mode = button.dataset.pop;
-        const prompt = {
-          explain: `请用中文小白版解释这段论文内容，并指出它和 neuroinformatics / BCI 的关系：\n\n${selected}`,
-          translate: `请把这段学术英文翻译成自然中文，保留关键术语：\n\n${selected}`,
-          apply: `请把这段内容转成日本医学博士申请中可用的真实兴趣表达，不能夸大、不能像广告：\n\n${selected}`
-        }[mode];
-        output.textContent = prompt;
-        copyText(prompt);
+    document.querySelectorAll("[data-mode]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const mode = button.dataset.mode;
         pop.style.display = "none";
+        if (mode === "term") addTermCard(selectedText || selectionText.textContent);
+        else await askAi(mode);
       });
     });
 
-    document.getElementById("makePromptBtn").addEventListener("click", () => {
-      const text = makeMarkdown();
-      output.textContent = text;
-      copyText(text);
+    document.querySelectorAll(".tab").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
+    $("loadPdfBtn").addEventListener("click", () => loadPdf({ url: $("pdfUrl").value.trim() }));
+    $("uploadPdf").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const buffer = await file.arrayBuffer();
+      await loadPdf({ data: new Uint8Array(buffer) });
     });
-
-    document.getElementById("exportBtn").addEventListener("click", () => {
-      const text = makeMarkdown();
-      output.textContent = text;
-      copyText(text);
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      if (!confirm("确定清空本页笔记和勾选状态吗？")) return;
+    $("prevPage").addEventListener("click", async () => { if (pdfDoc && currentPage > 1) { currentPage--; await renderPage(); } });
+    $("nextPage").addEventListener("click", async () => { if (pdfDoc && currentPage < pdfDoc.numPages) { currentPage++; await renderPage(); } });
+    $("zoomIn").addEventListener("click", async () => { scale = Math.min(2.2, scale + .15); await renderPage(); });
+    $("zoomOut").addEventListener("click", async () => { scale = Math.max(.75, scale - .15); await renderPage(); });
+    $("copyPageText").addEventListener("click", () => copyText(pagePlainText || ""));
+    $("askAiBtn").addEventListener("click", () => askAi("free", $("askBox").value.trim()));
+    $("copyPromptBtn").addEventListener("click", () => copyText(buildPrompt("free", $("askBox").value.trim())));
+    $("saveKeyBtn").addEventListener("click", () => { localStorage.setItem(keyKey, $("apiKey").value.trim()); showToast("API key 已保存到本机浏览器。"); });
+    $("clearKeyBtn").addEventListener("click", () => { localStorage.removeItem(keyKey); $("apiKey").value = ""; showToast("API key 已清除。"); });
+    $("exportBtn").addEventListener("click", () => { const md = makeMarkdown(); $("markdownOutput").textContent = md; copyText(md); });
+    $("resetBtn").addEventListener("click", () => {
+      if (!confirm("确定清空本页笔记和术语卡吗？")) return;
       localStorage.removeItem(noteKey);
-      localStorage.removeItem(checksKey);
-      fields.forEach((field) => field.value = "");
-      checks.forEach((box) => box.checked = false);
-      output.textContent = "这里会出现 Markdown。";
-      updateProgress();
-      showToast("已清空。");
+      localStorage.removeItem(termKey);
+      fields.forEach((field) => { field.value = ""; });
+      renderTerms();
+      $("markdownOutput").textContent = "导出内容会显示在这里。";
     });
 
     restoreNotes();
+    loadPdf({ url: $("pdfUrl").value.trim() });
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => {
