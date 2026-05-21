@@ -336,7 +336,7 @@
           <span>PMID: 41484392</span>
           <span>arXiv: 2403.15176</span>
         </div>
-        <div class="hint">现在这是阅读器，不只是任务卡。先加载 PDF，选中英文原文后用浮窗解释、翻译或申请化；右侧可以接 AI，也可以复制 prompt 给我。</div>
+        <div class="hint">现在这是阅读器，不只是任务卡。先加载 PDF，选中英文原文后用浮窗解释、翻译或申请化；右侧优先走 Codex / Paper Lens，也保留网页内 prompt 兜底。</div>
       </header>
 
       <section class="reader-card toolbar">
@@ -388,11 +388,22 @@
     </main>
 
     <aside class="assistant">
-      <h2>AI 助手与笔记</h2>
+      <h2>Codex 助手与笔记</h2>
 
       <div class="panel">
-        <label for="apiKey">OpenAI API key（可选，本机保存）</label>
-        <input id="apiKey" type="password" placeholder="不填也能生成 prompt；填了可尝试直接问 AI">
+        <h3>Codex / Paper Lens 模式</h3>
+        <p class="assistant-status" id="codexStatus">桌面端优先用 Codex：启动 paper-lens-codex 后，在本地 Web UI 里跑速览/学习/展示；本阅读台负责原文定位和笔记。</p>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn primary" id="copyPaperLensPrompt">复制 Paper Lens prompt</button>
+          <button class="btn" id="copyPaperLensCommands">复制启动命令</button>
+          <button class="btn" id="checkPaperLensBtn">检测本地后端</button>
+        </div>
+        <p class="small" style="margin-top:8px">静态 GitHub Pages 不能直接操控 Codex。真正直连需要本机 `paper-lens-codex` 后端，它会启动 `codex app-server`。</p>
+      </div>
+
+      <div class="panel">
+        <label for="apiKey">OpenAI API key（可选兜底，本机保存）</label>
+        <input id="apiKey" type="password" placeholder="Codex 不在本机运行时，可临时用这个兜底">
         <div class="btn-row" style="margin-top:8px">
           <select id="modelSelect" aria-label="model">
             <option value="gpt-5.2-mini">gpt-5.2-mini</option>
@@ -401,7 +412,7 @@
           <button class="btn" id="saveKeyBtn">保存本机</button>
           <button class="btn warn" id="clearKeyBtn">清除</button>
         </div>
-        <p class="assistant-status" id="aiStatus">未连接 AI。选中文本后可生成 prompt；填入 key 后尝试直连 OpenAI Responses API。若浏览器拦截，会自动回退为 prompt 模式。</p>
+        <p class="assistant-status" id="aiStatus">主路线是 Codex / Paper Lens。这里仅作为静态网页兜底：填入 key 后尝试直连 OpenAI Responses API；若浏览器拦截，会自动回退为 prompt 模式。</p>
       </div>
 
       <div class="panel">
@@ -415,7 +426,7 @@
 
       <div class="panel">
         <div class="chat" id="chatLog">
-          <div class="msg ai"><small>AI helper</small>选中 PDF 或原文文本后，我可以帮你解释、翻译、申请化。没有 API key 时，我会把高质量 prompt 复制出来给你发给 Codex/ChatGPT。</div>
+          <div class="msg ai"><small>Codex helper</small>选中 PDF 或原文文本后，优先把片段交给 Codex / Paper Lens。没有本地后端时，我会把高质量 prompt 复制出来给你发给 Codex/ChatGPT。</div>
         </div>
       </div>
 
@@ -606,6 +617,41 @@ ${getContextText()}
 ${extraQuestion || "(无)"}`;
     }
 
+    function buildPaperLensPrompt() {
+      const question = $("askBox").value.trim();
+      return `/paper-lens https://arxiv.org/pdf/2403.15176
+选择：学习模式
+
+请按日本医学博士申请场景陪读这篇论文。我的目标导师线是 柳澤琢史 / Takufumi Yanagisawa，关注 BCI / ECoG / neuroinformatics / AI medicine。
+
+当前我在阅读台中选中的原文：
+${selectedText || "(我还没有选中文字)"}
+
+当前页原文摘录：
+${pagePlainText ? pagePlainText.slice(0, 1600) : "(PDF 尚未加载或当前页没有文本)"}
+
+我的问题：
+${question || "请先用中文解释这段，再告诉我它能不能安全写进 AAD/SOP 或套磁问题。"}
+
+输出要求：
+- 术语英文后带中文短注释。
+- 分清论文事实、申请可用表达、不能夸大的风险。
+- 最后给我一句自然、不机械的中文申请素材。`;
+    }
+
+    function buildPaperLensCommands() {
+      return `# Terminal 1: Paper Lens Codex backend
+cd /Users/roronoazoro/Projects/paper-lens-codex/paper-lens-backend
+python3 server.py
+
+# Terminal 2: Paper Lens Codex web
+cd /Users/roronoazoro/Projects/paper-lens-codex/paper-lens-web
+npm run dev
+
+# Browser
+http://localhost:3001`;
+    }
+
     async function askAi(mode, extraQuestion = "") {
       const prompt = buildPrompt(mode, extraQuestion);
       addMessage("user", prompt.length > 1200 ? `${prompt.slice(0, 1200)}\n\n...` : prompt);
@@ -778,6 +824,18 @@ ${terms || "- "}
     $("copyPageText").addEventListener("click", () => copyText(pagePlainText || ""));
     $("askAiBtn").addEventListener("click", () => askAi("free", $("askBox").value.trim()));
     $("copyPromptBtn").addEventListener("click", () => copyText(buildPrompt("free", $("askBox").value.trim())));
+    $("copyPaperLensPrompt").addEventListener("click", () => copyText(buildPaperLensPrompt()));
+    $("copyPaperLensCommands").addEventListener("click", () => copyText(buildPaperLensCommands()));
+    $("checkPaperLensBtn").addEventListener("click", async () => {
+      $("codexStatus").textContent = "正在检测 http://localhost:8766/api/papers ...";
+      try {
+        const response = await fetch("http://localhost:8766/api/papers");
+        if (!response.ok) throw new Error(String(response.status));
+        $("codexStatus").textContent = "本地 Paper Lens 后端已运行。下一步打开 http://localhost:3001，或把 Paper Lens prompt 复制给 Codex。";
+      } catch {
+        $("codexStatus").textContent = "未检测到本地 Paper Lens 后端，或被浏览器 CORS 拦截。复制启动命令，在桌面端启动 backend + web。";
+      }
+    });
     $("saveKeyBtn").addEventListener("click", () => { localStorage.setItem(keyKey, $("apiKey").value.trim()); showToast("API key 已保存到本机浏览器。"); });
     $("clearKeyBtn").addEventListener("click", () => { localStorage.removeItem(keyKey); $("apiKey").value = ""; showToast("API key 已清除。"); });
     $("exportBtn").addEventListener("click", () => { const md = makeMarkdown(); $("markdownOutput").textContent = md; copyText(md); });
